@@ -16,18 +16,20 @@ BUILD_DIR = os.path.join(TOP_DIR, BUILD_DIR_NAME)
 
 LOCAL_CONF_SETTINGS = f"""
 # --- Custom settings added by cluster-hooks ---
+### Added by me ###
 MACHINE = "raspberrypi5"
 ENABLE_UART = "1"
 ENABLE_I2C = "1"
 KERNEL_MODULE_AUTOLOAD:rpi += "i2c-dev i2c-bcm2708"
-MACHINE_FEATURES:append = " vc4graphics"
+MACHINE_FEATURES:append = " vc4graphics "  
 DISTRO = "hehos"
+PACKAGECONFIG:append:pn-weston = " rdp" 
 
-# Enable RDP backend for Weston compositor
-PACKAGECONFIG:append:pn-weston = " rdp"
+# Some فلاحة for scarthgap 
+LICENSE_FLAGS_ACCEPTED:append = " synaptics-killswitch"
+LICENSE_FLAGS_ACCEPTED += "commercial"
 
-# ACCEPT LICENSE for Broadcom/Synaptics WiFi/BT firmware needed for Raspberry Pi
-LICENSE_FLAGS_ACCEPTED = "synaptics-killswitch"
+### Added by me ###
 # --- End of custom settings ---
 """
 
