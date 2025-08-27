@@ -33,7 +33,7 @@ LAYERS_TO_ADD = [
     "sources/meta-openembedded/meta-multimedia",
     "sources/meta-raspberrypi",
     "sources/meta-qt6",
-    "sources/meta-coda-distro",
+    "sources/meta-coda", # CORRECTED
 ]
 
 def run_command(cmd, cwd=None):
@@ -52,19 +52,14 @@ def run_command(cmd, cwd=None):
         print(f"[Cluster Hook] ERROR: Command failed with exit code {e.returncode}", file=sys.stderr)
         sys.exit(e.returncode)
 
-# ======================================================================
-# THE FIX IS HERE: Add **kwargs to the main() function definition.
-# ======================================================================
 def main(**kwargs):
     """Main function to execute the setup process."""
-    # You can optionally print the arguments repo passed in, for debugging.
     print(f"[Cluster Hook] Hook called with arguments: {kwargs}")
-
     print("--- [Cluster Hook] Starting post-sync Yocto environment configuration (Python) ---")
 
     # --- 1. Initialize the build directory ---
-    print(f"[Cluster Hook] Initializing build directory at: {BUILD_DIR}")
     init_script = os.path.join(TOP_DIR, "sources/poky/oe-init-build-env")
+    print(f"[Cluster Hook] Initializing build directory at: {BUILD_DIR}")
     run_command(f"source {init_script} {BUILD_DIR}", cwd=TOP_DIR)
     print(f"[Cluster Hook] Build directory is at: {BUILD_DIR}")
 
@@ -95,6 +90,4 @@ def main(**kwargs):
     print(f"To use it, run: source sources/poky/oe-init-build-env {BUILD_DIR_NAME}")
 
 if __name__ == "__main__":
-    # This part is for running the script directly for testing,
-    # it won't be used by the repo hook mechanism.
     main()
