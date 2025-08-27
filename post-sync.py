@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 #
 # This script automates the setup of a Yocto build environment after a 'repo sync'.
+# It configures the build, adds layers, and pre-fetches source code.
 #
 
 import os
@@ -14,7 +15,7 @@ BUILD_DIR = os.path.join(TOP_DIR, BUILD_DIR_NAME)
 
 LOCAL_CONF_SETTINGS = f"""
 # --- Custom settings added by cluster-hooks ---
-MACHINE = "raspberrypi5-64"
+MACHINE = "raspberrypi5"
 ENABLE_UART = "1"
 ENABLE_I2C = "1"
 KERNEL_MODULE_AUTOLOAD:rpi += "i2c-dev i2c-bcm2708"
@@ -33,13 +34,14 @@ LAYERS_TO_ADD = [
     "sources/meta-openembedded/meta-multimedia",
     "sources/meta-raspberrypi",
     "sources/meta-qt6",
-    "sources/meta-coda", # CORRECTED
+    "sources/meta-coda",
 ]
 
 def run_command(cmd, cwd=None):
     """Helper function to run a shell command."""
     print(f"[Cluster Hook] Running command: {cmd}")
     try:
+        # 'source' requires running in a shell.
         is_sourcing = "source" in cmd
         subprocess.run(
             cmd,
@@ -82,10 +84,16 @@ def main(**kwargs):
     print("[Cluster Hook] Configuring conf/bblayers.conf...")
     for layer in LAYERS_TO_ADD:
         layer_path = os.path.join(TOP_DIR, layer)
+        # Each bitbake-layers command needs the build environment to be sourced.
         cmd = f"source {init_script} {BUILD_DIR} && bitbake-layers add-layer {layer_path}"
         run_command(cmd, cwd=TOP_DIR)
 
-    print("--- [Cluster Hook] Yocto environment setup is complete! ---")
+    print("[Cluster Hook] Pre-fetching all source code for the image...")
+    # This command also needs the full build environment to be sourced.
+    fetch_cmd = f"source {init_script} {BUILD_DIR} && bitbake core-image-coda-cluster --runonly=fetch"
+    run_command(fetch_cmd, cwd=TOP_DIR)
+
+    print("--- [Cluster Hook] Yocto environment setup and source fetching is complete! ---")
     print(f"Your build directory is '{BUILD_DIR_NAME}'.")
     print(f"To use it, run: source sources/poky/oe-init-build-env {BUILD_DIR_NAME}")
 
